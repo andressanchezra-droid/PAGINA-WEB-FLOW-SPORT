@@ -138,9 +138,15 @@ document.addEventListener('DOMContentLoaded', () => {
       img:      imgData, /* La imagen en base64 (o vacío si no subió) */
     };
 
-    /* Añade el nuevo producto y guarda en localStorage */
-    products.push(newProduct);
-    saveProducts(products);
+// En vez de guardar en el navegador, le manda el producto al servidor
+await fetch('http://localhost:8080/productos', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    nombre: newProduct.name,
+    precio: newProduct.price
+  })
+});
 
     /* Notifica y redirige al dashboard */
     showToast('Producto guardado correctamente ✓');

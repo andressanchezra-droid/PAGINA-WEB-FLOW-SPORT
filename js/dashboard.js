@@ -158,8 +158,10 @@ document.addEventListener('DOMContentLoaded', () => {
   /* Botón "Eliminar" confirma: borra del array y actualiza la tabla */
   document.getElementById('confirmDel').addEventListener('click', () => {
     let products = getProducts();
-    products = products.filter(p => p.id !== deleteId); /* Quita el producto */
-    saveProducts(products);                              /* Guarda en localStorage */
+  await fetch('http://localhost:8080/productos/' + deleteId, {
+     method: 'DELETE'
+  });
+  renderTable();
     delOverlay.classList.remove('active');
     renderTable(document.getElementById('searchInput').value); /* Actualiza tabla */
     showToast('Producto eliminado correctamente');

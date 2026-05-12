@@ -126,13 +126,14 @@ const DEFAULT_PRODUCTS = [
   },
 ];
 
-/* Lee los productos del localStorage (o usa los por defecto si no hay) */
-function getProducts() {
-  const saved = localStorage.getItem('sf_products');
-  return saved ? JSON.parse(saved) : DEFAULT_PRODUCTS;
-}
+// La dirección de tu servidor Java
+const API_URL = 'http://localhost:8080/productos';
 
-/* Guarda el array de productos actualizado en localStorage */
-function saveProducts(arr) {
-  localStorage.setItem('sf_products', JSON.stringify(arr));
+// Pide los productos AL SERVIDOR (ya no al navegador)
+async function getProducts() {
+  const saved = localStorage.getItem('sf_products');
+  if (!saved) {
+    saveProducts(DEFAULT_PRODUCTS); // <-- agrega esta línea
+  }
+  return saved ? JSON.parse(saved) : DEFAULT_PRODUCTS;
 }
