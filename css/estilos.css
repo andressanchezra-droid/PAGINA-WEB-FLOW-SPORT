@@ -1,0 +1,503 @@
+/* ================================================================
+   SPORTFLOW ADMIN — ESTILOS GLOBALES
+   Archivo: css/estilos.css
+   Descripción: Todos los estilos compartidos entre las 4 páginas
+   ================================================================ */
+
+
+/* ----------------------------------------------------------------
+   RESET GENERAL
+   Elimina márgenes y paddings por defecto del navegador
+   ---------------------------------------------------------------- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif; /* Fuente principal del sistema */
+}
+
+
+/* ================================================================
+   NAVBAR — Barra de navegación superior (Dashboard, Agregar, Editar)
+   ================================================================ */
+.navbar {
+  display: flex;
+  justify-content: space-between;  /* Logo izquierda, usuario derecha */
+  align-items: center;
+  padding: 0 40px;
+  height: 60px;
+  background: white;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  position: sticky; /* Se fija al hacer scroll */
+  top: 0;
+  z-index: 50;      /* Por encima del contenido */
+}
+
+/* Lado izquierdo: ícono azul + nombre del sistema */
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Cuadro azul con el ícono de rayo */
+.logo-icon {
+  width: 36px;
+  height: 36px;
+  background: #2563eb;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-icon svg {
+  width: 18px;
+  height: 18px;
+  fill: white;
+}
+
+/* Texto "SportFlow Admin" */
+.nav-left span {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111;
+}
+
+
+/* ----------------------------------------------------------------
+   DROPDOWN DE USUARIO
+   Controlado por JavaScript con click (no con :hover de CSS)
+   para evitar que se cierre solo al mover el mouse al menú
+   ---------------------------------------------------------------- */
+.nav-right {
+  position: relative; /* El dropdown se posiciona relativo a este div */
+}
+
+/* Botón clickeable con avatar + nombre + flecha */
+.nav-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+  user-select: none; /* Evita seleccionar texto al hacer clic */
+}
+
+.nav-user:hover { background: #f3f4f6; }
+
+/* Círculo azul con ícono de persona */
+.avatar {
+  width: 32px;
+  height: 32px;
+  background: #2563eb;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar svg { width: 16px; height: 16px; fill: white; }
+
+/* Texto "Hola, [Nombre]" */
+.nav-user span { font-size: 14px; font-weight: 500; color: #111; }
+
+/* Flecha que rota 180° cuando el menú está abierto */
+.nav-user .chevron {
+  width: 14px;
+  height: 14px;
+  stroke: #6b7280;
+  fill: none;
+  transition: transform 0.2s;
+}
+
+.nav-user.open .chevron { transform: rotate(180deg); }
+
+/* El menú desplegable — oculto hasta que JS añada clase "open" */
+.dropdown {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  background: white;
+  border-radius: 10px;
+  min-width: 170px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.13);
+  overflow: hidden;
+  z-index: 100;
+  animation: fadeDown 0.15s ease;
+}
+
+.dropdown.open { display: block; } /* JS añade/quita esta clase */
+
+/* Animación de entrada del dropdown */
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Enlace dentro del dropdown */
+.dropdown a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 16px;
+  font-size: 14px;
+  color: #374151;
+  text-decoration: none;
+}
+
+.dropdown a:hover { background: #f9fafb; }
+.dropdown a svg   { width: 15px; height: 15px; stroke: currentColor; fill: none; }
+
+
+/* ================================================================
+   BREADCRUMB — Ruta de navegación (ej: Inventario > Agregar)
+   ================================================================ */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.breadcrumb a    { font-size: 13px; color: #2563eb; text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+.breadcrumb span { font-size: 13px; color: #9ca3af; } /* Página actual */
+.breadcrumb svg  { width: 12px; height: 12px; stroke: #9ca3af; fill: none; }
+
+
+/* ================================================================
+   LAYOUT GENERAL DE PÁGINAS INTERNAS
+   ================================================================ */
+.container { padding: 28px 40px; }
+
+/* Título grande de página */
+.page-title { font-size: 22px; font-weight: 700; color: #111; }
+
+/* Subtítulo gris con ícono (ej: fecha de actualización) */
+.page-sub {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #9ca3af;
+  margin-top: 4px;
+  margin-bottom: 24px;
+}
+.page-sub svg { width: 13px; height: 13px; stroke: #9ca3af; fill: none; }
+
+
+/* ================================================================
+   FORMULARIOS — Tarjeta blanca de Agregar y Editar producto
+   ================================================================ */
+
+/* Caja blanca principal del formulario */
+.form-box {
+  background: white;
+  border-radius: 14px;
+  padding: 28px;
+  max-width: 680px;
+  margin: 0 auto; /* Centrado horizontalmente */
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  border: 1px solid #e5e7eb;
+}
+
+/* Un campo del formulario: label + input */
+.field { margin-bottom: 18px; }
+
+.field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+/* Asterisco rojo que indica campo obligatorio */
+.field label .req { color: #ef4444; margin-left: 2px; }
+
+/* Estilos base para input, select y textarea */
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 9px;
+  font-size: 14px;
+  color: #111;
+  outline: none;
+  transition: border 0.2s;
+  background: white;
+}
+
+/* Resaltado azul al hacer foco */
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.08);
+}
+
+/* Input de precio (va sin borde porque su borde lo pone .input-wrap) */
+.field input.price {
+  padding-left: 0;
+  border: none;
+  outline: none;
+  flex: 1;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* Textarea no redimensionable */
+.field textarea { resize: none; height: 100px; }
+
+/* Contenedor para campos con prefijo como "$" */
+.input-wrap {
+  display: flex;
+  align-items: center;
+  border: 1px solid #d1d5db;
+  border-radius: 9px;
+  overflow: hidden;
+  background: white;
+  transition: border 0.2s;
+}
+
+.input-wrap:focus-within {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.08);
+}
+
+/* El símbolo "$" a la izquierda del precio */
+.input-prefix {
+  padding: 0 12px;
+  font-size: 14px;
+  color: #6b7280;
+  background: #f9fafb;
+  border-right: 1px solid #e5e7eb;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+}
+
+/* Dos campos lado a lado en la misma fila */
+.row { display: flex; gap: 16px; }
+.row .field { flex: 1; } /* Cada campo ocupa el 50% */
+
+/* Mensaje de error debajo de un campo — JS lo muestra */
+.error-field { font-size: 12px; color: #ef4444; margin-top: 4px; display: none; }
+
+
+/* ================================================================
+   ZONA DE CARGA DE IMAGEN
+   ================================================================ */
+
+/* Cuadro punteado para arrastrar/subir imagen */
+.upload-area {
+  border: 2px dashed #d1d5db;
+  border-radius: 10px;
+  padding: 32px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #fafafa;
+}
+
+/* Efecto visual al hover o drag */
+.upload-area:hover,
+.upload-area.drag {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+.upload-area svg   { width: 34px; height: 34px; stroke: #9ca3af; fill: none; margin-bottom: 10px; }
+.upload-area p     { font-size: 14px; color: #374151; font-weight: 500; }
+.upload-area small { font-size: 12px; color: #9ca3af; }
+
+/* Vista previa de imagen (agregar) — oculta hasta que JS la active */
+.img-preview { display: none; margin-top: 12px; position: relative; width: fit-content; }
+
+/* Imagen actual (editar) — oculta hasta que JS la active */
+.img-current { display: none; position: relative; width: fit-content; margin-top: 10px; }
+
+/* Tamaño de ambas imágenes preview */
+.img-preview img,
+.img-current img { width: 100px; height: 100px; object-fit: cover; border-radius: 10px; display: block; }
+
+/* Botón rojo "✕" flotando sobre la imagen para eliminarla */
+.btn-remove-img,
+.btn-del-img {
+  position: absolute;
+  top: -8px; right: -8px;
+  width: 22px; height: 22px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Enlace "Cambiar imagen" — JS lo muestra cuando hay imagen */
+.btn-change-img {
+  display: none;
+  margin-top: 8px;
+  font-size: 13px;
+  color: #2563eb;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+}
+.btn-change-img:hover { text-decoration: underline; }
+
+
+/* ================================================================
+   BOTONES INFERIORES DEL FORMULARIO
+   ================================================================ */
+
+/* Fila de botones al final (Cancelar + Guardar) */
+.form-footer {
+  display: flex;
+  justify-content: flex-end; /* Alineados a la derecha */
+  gap: 10px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #f3f4f6;
+}
+
+/* Botón gris de cancelar */
+.btn-cancel {
+  padding: 11px 20px;
+  background: #f3f4f6;
+  color: #374151;
+  border: none;
+  border-radius: 9px;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+.btn-cancel:hover { background: #e5e7eb; }
+
+/* Botón azul de guardar/actualizar */
+.btn-save {
+  padding: 11px 22px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-save:hover { background: #1d4ed8; }
+
+
+/* ================================================================
+   TOAST — Notificación flotante (ej: "Producto guardado ✓")
+   ================================================================ */
+.toast {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 300;
+  background: #111;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  opacity: 0;          /* Invisible por defecto */
+  pointer-events: none;
+  transform: translateY(12px);
+  transition: all 0.3s;
+}
+
+/* JS añade esta clase para mostrarlo */
+.toast.show { opacity: 1; transform: translateY(0); }
+
+
+/* ================================================================
+   OVERLAY Y MODAL GENÉRICO (eliminar producto, confirmaciones)
+   ================================================================ */
+
+/* Fondo oscuro que cubre la pantalla */
+.overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 200;
+  justify-content: center;
+  align-items: center;
+}
+
+.overlay.active { display: flex; } /* JS activa con esta clase */
+
+/* Tarjeta blanca del modal */
+.modal-box {
+  background: white;
+  border-radius: 16px;
+  padding: 28px;
+  width: 340px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  animation: slideUp 0.25s ease;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(-16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Círculo de ícono centrado en el modal */
+.modal-box .icon-circle {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 16px;
+}
+
+/* Colores del círculo según tipo de modal */
+.icon-circle.red   { background: #fee2e2; }
+.icon-circle.green { background: #dcfce7; }
+.icon-circle svg   { width: 22px; height: 22px; fill: none; }
+.icon-circle.red   svg { stroke: #dc2626; }
+.icon-circle.green svg { stroke: #16a34a; }
+
+.modal-box h3 { font-size: 17px; font-weight: 700; text-align: center; margin-bottom: 8px; }
+.modal-box p  { font-size: 13px; color: #6b7280; text-align: center; margin-bottom: 20px; }
+
+/* Fila de botones del modal */
+.modal-btns { display: flex; gap: 10px; }
+
+/* Botón gris (cancelar) */
+.btn-modal-cancel {
+  flex: 1; padding: 11px;
+  background: #f3f4f6; border: none;
+  border-radius: 8px; font-size: 14px; cursor: pointer;
+}
+.btn-modal-cancel:hover { background: #e5e7eb; }
+
+/* Botón rojo (confirmar eliminación) */
+.btn-modal-confirm {
+  flex: 1; padding: 11px;
+  background: #dc2626; color: white; border: none;
+  border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;
+}
+.btn-modal-confirm:hover { background: #b91c1c; }
+
+/* Botón azul primario (ej: "Entendido" en confirmaciones) */
+.btn-modal-primary {
+  width: 100%; margin-top: 4px; padding: 11px;
+  background: #2563eb; color: white; border: none;
+  border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;
+}
+.btn-modal-primary:hover { background: #1d4ed8; }

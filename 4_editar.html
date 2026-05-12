@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editar Producto - SportFlow</title>
+  <!-- Fuente principal -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Estilos globales: navbar, formularios, botones, toast -->
+  <link rel="stylesheet" href="css/estilos.css">
+  <style>
+    /* ── Estilos exclusivos de esta página ── */
+    body { background: #f3f4f6; min-height: 100vh; }
+  </style>
+</head>
+<body>
+
+<!-- ── BARRA DE NAVEGACIÓN SUPERIOR ── -->
+<header class="navbar">
+
+  <div class="nav-left">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+    </div>
+    <span>SportFlow Admin</span>
+  </div>
+
+  <div class="nav-right">
+    <div class="nav-user">
+      <div class="avatar">
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <span id="navUserName">Hola, Admin</span>
+      <svg class="chevron" viewBox="0 0 24 24" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="dropdown">
+      <a href="index.html">
+        <svg viewBox="0 0 24 24" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Cerrar sesión
+      </a>
+    </div>
+  </div>
+
+</header>
+
+
+<!-- ── CONTENIDO PRINCIPAL ── -->
+<main class="container">
+
+  <!-- Ruta de navegación -->
+  <div class="breadcrumb">
+    <a href="2_dashboard.html">Inventario</a>
+    <svg viewBox="0 0 24 24" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+    <span>Editar</span>
+  </div>
+
+  <!-- Título dinámico (JS lo actualiza con el nombre del producto) -->
+  <div class="page-title" id="pageTitle">Editar Producto</div>
+
+  <!-- Subtítulo con fecha de última actualización (JS la pone) -->
+  <div class="page-sub">
+    <svg viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    <span id="pageDate"></span>
+  </div>
+
+  <!-- Caja del formulario (los valores los llena editar.js) -->
+  <div class="form-box">
+
+    <!-- Nombre del producto -->
+    <div class="field">
+      <label>Nombre del Producto <span class="req">*</span></label>
+      <input type="text" id="prodName">
+    </div>
+
+    <!-- Descripción -->
+    <div class="field">
+      <label>Descripción <span class="req">*</span></label>
+      <textarea id="prodDesc"></textarea>
+    </div>
+
+    <!-- Fila: Categoría + Stock -->
+    <div class="row">
+      <div class="field">
+        <label>Categoría <span class="req">*</span></label>
+        <select id="prodCat">
+          <option value="">Seleccionar categoría</option>
+          <option>Fútbol</option>
+          <option>Baloncesto</option>
+          <option>Tenis</option>
+          <option>Calzado</option>
+          <option>Fitness</option>
+          <option>Natación</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Stock Actual <span class="req">*</span></label>
+        <input type="number" id="prodStock" min="0">
+      </div>
+    </div>
+
+    <!-- Fila: Precio compra + Precio venta -->
+    <div class="row">
+      <div class="field">
+        <label>Precio de Compra <span class="req">*</span></label>
+        <div class="input-wrap">
+          <span class="input-prefix">$</span>
+          <input type="number" id="prodBuy" class="price" min="0" step="0.01">
+        </div>
+      </div>
+      <div class="field">
+        <label>Precio de Venta <span class="req">*</span></label>
+        <div class="input-wrap">
+          <span class="input-prefix">$</span>
+          <input type="number" id="prodSell" class="price" min="0" step="0.01">
+        </div>
+      </div>
+    </div>
+
+    <!-- Zona de imagen -->
+    <div class="field">
+      <label>Imagen del Producto</label>
+
+      <!-- Imagen actual (JS la muestra si el producto ya tiene imagen) -->
+      <div class="img-current" id="imgCurrent">
+        <img id="currentImg" src="" alt="Imagen actual del producto">
+        <!-- Botón para eliminar la imagen actual -->
+        <button class="btn-del-img" id="delImgBtn">✕</button>
+      </div>
+
+      <!-- Enlace para cambiar la imagen (oculto hasta que haya imagen) -->
+      <button class="btn-change-img" id="changeImgBtn">Cambiar imagen</button>
+
+      <!-- Cuadro punteado para subir nueva imagen (oculto si ya hay imagen) -->
+      <div class="upload-area" id="uploadArea">
+        <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <p>Haz clic para subir una imagen</p>
+        <small>PNG, JPG hasta 10MB</small>
+      </div>
+
+      <!-- Input file oculto -->
+      <input type="file" id="fileInput" accept="image/*">
+    </div>
+
+    <!-- Botones: Descartar y Actualizar -->
+    <div class="form-footer">
+      <a href="2_dashboard.html" class="btn-cancel">Descartar Cambios</a>
+      <button class="btn-save" id="saveBtn">Actualizar Cambios</button>
+    </div>
+
+  </div>
+</main>
+
+<!-- Notificación flotante de confirmación -->
+<div class="toast" id="toast"></div>
+
+
+<!-- ── SCRIPTS ── -->
+<script src="js/utils.js"></script>   <!-- Navbar, toast, getProducts, saveProducts -->
+<script src="js/editar.js"></script>  <!-- Carga datos, imagen, actualizar producto -->
+
+</body>
+</html>

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - SportFlow</title>
+  <!-- Fuente principal -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Estilos globales compartidos (navbar, modales, formularios) -->
+  <link rel="stylesheet" href="css/estilos.css">
+  <style>
+    /* ── Estilos exclusivos del dashboard ── */
+    body { background: #f3f4f6; min-height: 100vh; }
+ 
+    /* Título + botón en la misma fila */
+    .top-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+ 
+    .top-section h1 { font-size: 22px; font-weight: 700; color: #111; }
+ 
+    /* Botón azul "+ Agregar Nuevo Producto" */
+    .btn-add {
+      display: flex; align-items: center; gap: 6px;
+      background: #2563eb; color: white;
+      padding: 10px 18px; border-radius: 9px;
+      text-decoration: none; font-size: 14px; font-weight: 600;
+      transition: background 0.2s;
+    }
+    .btn-add:hover { background: #1d4ed8; }
+ 
+    /* Buscador con ícono */
+    .search-wrap {
+      display: flex; align-items: center; gap: 10px;
+      background: white; border: 1px solid #e5e7eb;
+      border-radius: 10px; padding: 0 16px; margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .search-wrap:focus-within { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.08); }
+    .search-wrap svg   { width: 16px; height: 16px; stroke: #9ca3af; fill: none; flex-shrink: 0; }
+    .search-wrap input { flex: 1; border: none; outline: none; padding: 12px 0; font-size: 14px; color: #111; }
+    .search-wrap input::placeholder { color: #9ca3af; }
+ 
+    /* Contenedor de la tabla */
+    .table-wrap {
+      background: white; border-radius: 12px; overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06); border: 1px solid #e5e7eb;
+    }
+ 
+    /* Estilos de la tabla */
+    table { width: 100%; border-collapse: collapse; }
+    thead tr { background: #f9fafb; }
+ 
+    th {
+      padding: 12px 16px;
+      font-size: 11px; font-weight: 600; color: #6b7280;
+      text-transform: uppercase; letter-spacing: 0.05em; text-align: left;
+    }
+ 
+    td {
+      padding: 14px 16px; font-size: 14px; color: #374151;
+      border-top: 1px solid #f3f4f6; vertical-align: middle;
+    }
+ 
+    /* Centrado de columnas Stock, Precio y Acciones */
+    th:nth-child(5), th:nth-child(6), th:last-child,
+    td:nth-child(5), td:nth-child(6), td:last-child { text-align: center; }
+ 
+    tbody tr:hover { background: #fafafa; } /* Hover sutil en filas */
+ 
+    /* Imagen del producto en la tabla */
+    .product-img { width: 46px; height: 46px; object-fit: cover; border-radius: 8px; display: block; }
+ 
+    /* Placeholder gris si no hay imagen */
+    .img-placeholder {
+      width: 46px; height: 46px; background: #f3f4f6;
+      border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    }
+ 
+    /* Tags de categoría — colores definidos en estilos.css */
+    .tag { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; background: #dbeafe; color: #1d4ed8; }
+    .tag.calzado    { background: #dcfce7; color: #15803d; }
+    .tag.fitness    { background: #fef9c3; color: #a16207; }
+    .tag.baloncesto { background: #f3e8ff; color: #7e22ce; }
+    .tag.tenis      { background: #ffedd5; color: #c2410c; }
+    .tag.natacion   { background: #cffafe; color: #0e7490; }
+ 
+    /* Stock con colores según cantidad (verde/amarillo/rojo) */
+    .stock-num { font-weight: 600; }
+    .stock-ok  { color: #16a34a; }
+    .stock-mid { color: #d97706; }
+    .stock-low { color: #dc2626; }
+ 
+    /* Botones de acción (editar/eliminar) */
+    .actions { display: flex; gap: 6px; justify-content: center; }
+ 
+    .btn-icon {
+      width: 32px; height: 32px; border: none; border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: background 0.15s;
+    }
+ 
+    .btn-edit       { background: #eff6ff; color: #2563eb; }
+    .btn-edit:hover { background: #dbeafe; }
+    .btn-del        { background: #fff1f2; color: #e11d48; }
+    .btn-del:hover  { background: #fee2e2; }
+    .btn-icon svg   { width: 15px; height: 15px; stroke: currentColor; fill: none; }
+ 
+    /* Texto de pie de tabla */
+    .table-footer { padding: 12px 16px; font-size: 13px; color: #6b7280; border-top: 1px solid #f3f4f6; }
+ 
+    /* Ícono del modal de eliminar */
+    .del-icon { width: 48px; height: 48px; background: #fee2e2; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
+    .del-icon svg { width: 22px; height: 22px; stroke: #dc2626; fill: none; }
+  </style>
+</head>
+<body>
+ 
+<!-- ── BARRA DE NAVEGACIÓN SUPERIOR ── -->
+<header class="navbar">
+ 
+  <!-- Izquierda: logo + nombre -->
+  <div class="nav-left">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+    </div>
+    <span>SportFlow Admin</span>
+  </div>
+ 
+  <!-- Derecha: botón de usuario con dropdown -->
+  <div class="nav-right">
+    <div class="nav-user">
+      <div class="avatar">
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <span id="navUserName">Hola, Admin</span>
+      <!-- Flecha que rota al abrir el menú -->
+      <svg class="chevron" viewBox="0 0 24 24" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+ 
+    <!-- Menú desplegable — controlado por JS en utils.js -->
+    <div class="dropdown">
+      <a href="index.html">
+        <svg viewBox="0 0 24 24" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Cerrar sesión
+      </a>
+    </div>
+  </div>
+ 
+</header>
+ 
+ 
+<!-- ── CONTENIDO PRINCIPAL ── -->
+<main class="container">
+ 
+  <!-- Título e inventario + botón de agregar -->
+  <div class="top-section">
+    <h1>Inventario General de Productos</h1>
+    <a href="3_agregar.html" class="btn-add">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      Agregar Nuevo Producto
+    </a>
+  </div>
+ 
+  <!-- Buscador en tiempo real (filtrado por JS en dashboard.js) -->
+  <div class="search-wrap">
+    <svg viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="searchInput" placeholder="Buscar por ID, producto o categoría...">
+  </div>
+ 
+  <!-- Tabla de productos — el tbody se llena dinámicamente con JS -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Imagen</th>
+          <th>Producto</th>
+          <th>Categoría</th>
+          <th>Stock</th>
+          <th>Precio</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+        <!-- JS inserta las filas aquí -->
+      </tbody>
+    </table>
+    <!-- Texto "Mostrando X de Y productos" -->
+    <div class="table-footer" id="tableFooter"></div>
+  </div>
+ 
+</main>
+ 
+ 
+<!-- ── MODAL DE CONFIRMACIÓN DE ELIMINACIÓN ── -->
+<div class="overlay" id="delOverlay">
+  <div class="modal-box">
+    <div class="del-icon">
+      <svg viewBox="0 0 24 24" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+    </div>
+    <h3>Eliminar Producto</h3>
+    <!-- JS actualiza este texto con el nombre del producto -->
+    <p id="delMsg">¿Estás seguro? Esta acción no se puede deshacer.</p>
+    <div class="modal-btns">
+      <button class="btn-modal-cancel"  id="cancelDel">Cancelar</button>
+      <button class="btn-modal-confirm" id="confirmDel">Eliminar</button>
+    </div>
+  </div>
+</div>
+ 
+<!-- Notificación flotante de acciones -->
+<div class="toast" id="toast"></div>
+ 
+ 
+<!-- ── SCRIPTS (orden importante: utils primero, luego dashboard) ── -->
+<script src="js/utils.js"></script>    <!-- Navbar, toast, getProducts, saveProducts -->
+<script src="js/dashboard.js"></script> <!-- Tabla, búsqueda, eliminación -->
+ 
+</body>
+</html>
