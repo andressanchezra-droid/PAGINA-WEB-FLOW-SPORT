@@ -41,8 +41,18 @@ document.addEventListener('DOMContentLoaded', () => {
      RENDER TABLA — Construye las filas dinámicamente con JS
      Recibe un texto de búsqueda opcional para filtrar resultados
      ---------------------------------------------------------------- */
-  function renderTable(filter = '') {
-    const products = getProducts();             /* Lee del localStorage */
+  async function renderTable(filter = '') {
+    let products = [];
+
+    try {
+      products = await getProducts();
+    } catch (error) {
+      document.getElementById('tableBody').innerHTML = '';
+      document.getElementById('tableFooter').textContent = 'No fue posible cargar los productos.';
+      showToast('No se pudo cargar el inventario');
+      return;
+    }
+
     const q = filter.toLowerCase();            /* Texto de búsqueda en minúsculas */
 
     /* Filtra los productos que coincidan con la búsqueda (ID, nombre o categoría) */
@@ -156,15 +166,18 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* Botón "Eliminar" confirma: borra del array y actualiza la tabla */
-  document.getElementById('confirmDel').addEventListener('click', () => {
-    let products = getProducts();
-  await fetch('http://localhost:8080/productos/' + deleteId, {
-     method: 'DELETE'
-  });
-  renderTable();
-    delOverlay.classList.remove('active');
-    renderTable(document.getElementById('searchInput').value); /* Actualiza tabla */
-    showToast('Producto eliminado correctamente');
+  document.getElementById('confirmDel').addEventListener('click', async () => {
+    if (!deleteId) return;
+
+    try {
+      await deleteProduct(deleteId);
+      delOverlay.classList.remove('active');
+      await renderTable(document.getElementById('searchInput').value); /* Actualiza tabla */
+      showToast('Producto eliminado correctamente');
+      deleteId = null;
+    } catch (error) {
+      showToast('No se pudo eliminar el producto');
+    }
   });
 
   /* Clic en el fondo oscuro cierra el modal */

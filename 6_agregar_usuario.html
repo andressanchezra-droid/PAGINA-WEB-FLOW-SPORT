@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agregar Usuario - SportFlow</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilos.css">
+  <style>
+    body { background: #f3f4f6; min-height: 100vh; }
+    .page-title { text-align: center; }
+    .page-sub { justify-content: center; }
+    .hint { font-size: 12px; color: #6b7280; margin-top: -8px; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+<header class="navbar">
+  <div class="nav-left">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+    </div>
+    <span>SportFlow Admin</span>
+  </div>
+
+  <div class="nav-right">
+    <div class="nav-user">
+      <div class="avatar">
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <span id="navUserName">Hola, Admin</span>
+      <svg class="chevron" viewBox="0 0 24 24" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="dropdown">
+      <a href="index.html">
+        <svg viewBox="0 0 24 24" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Cerrar sesión
+      </a>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <div class="breadcrumb">
+    <a href="5_usuarios.html">Usuarios</a>
+    <svg viewBox="0 0 24 24" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+    <span>Agregar</span>
+  </div>
+
+  <div class="page-title">Registrar Nuevo Usuario</div>
+  <div class="page-sub">
+    <svg viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    <span>Datos que se enviarán al backend en /usuarios</span>
+  </div>
+
+  <div class="form-box">
+    <div class="field">
+      <label>Nombre Completo <span class="req">*</span></label>
+      <input type="text" id="userName" placeholder="Juan Perez">
+      <div class="error-field" id="errName">El nombre es obligatorio.</div>
+    </div>
+
+    <div class="field">
+      <label>Correo Electrónico <span class="req">*</span></label>
+      <input type="email" id="userEmail" placeholder="usuario@correo.com">
+      <div class="error-field" id="errEmail">Ingresa un correo válido.</div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>Edad <span class="req">*</span></label>
+        <input type="number" id="userAge" min="0" step="1" value="18">
+        <div class="error-field" id="errAge">La edad debe ser mayor o igual a 0.</div>
+      </div>
+      <div class="field">
+        <label>Rol <span class="req">*</span></label>
+        <select id="userRole">
+          <option value="">Seleccionar rol</option>
+          <option value="user">user</option>
+          <option value="admin">admin</option>
+          <option value="gestor">gestor</option>
+        </select>
+        <div class="error-field" id="errRole">Selecciona un rol.</div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>Estado <span class="req">*</span></label>
+        <select id="userState">
+          <option value="true">Activo</option>
+          <option value="false">Inactivo</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Contraseña <span class="req">*</span></label>
+        <input type="password" id="userPass" placeholder="Mínimo 4 caracteres">
+        <div class="error-field" id="errPass">La contraseña debe tener al menos 4 caracteres.</div>
+      </div>
+    </div>
+
+    <div class="hint">Si el backend agrega validaciones adicionales, se mostrarán en la respuesta del servidor.</div>
+
+    <div class="form-footer">
+      <a href="5_usuarios.html" class="btn-cancel">Cancelar</a>
+      <button class="btn-save" id="saveBtn">Guardar Usuario</button>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/utils.js"></script>
+<script src="js/agregar-usuario.js"></script>
+</body>
+</html>

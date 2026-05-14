@@ -6,17 +6,23 @@
    ================================================================ */
 
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
 
   /* ----------------------------------------------------------------
      CARGAR DATOS DEL PRODUCTO
      Lee el ID guardado por el dashboard y rellena el formulario
      ---------------------------------------------------------------- */
-  const editId   = localStorage.getItem('sf_edit_id'); /* ID guardado al presionar editar */
-  const products = getProducts();
+  const editId = localStorage.getItem('sf_edit_id'); /* ID guardado al presionar editar */
+  const products = await getProducts();
 
   /* Busca el producto por ID; si no existe, usa el primero como fallback */
-  let product = products.find(p => p.id === editId) || products[0];
+  let product = products.find(p => String(p.id) === String(editId)) || products[0];
+
+  if (!product) {
+    showToast('No se encontró el producto a editar');
+    setTimeout(() => window.location.href = '2_dashboard.html', 1200);
+    return;
+  }
 
   /* Actualiza el título de la página con el nombre del producto */
   document.getElementById('pageTitle').textContent = 'Editar Producto: ' + product.name;
@@ -103,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
      GUARDAR CAMBIOS
      Valida los campos, actualiza el producto y guarda en localStorage
      ---------------------------------------------------------------- */
-  document.getElementById('saveBtn').addEventListener('click', () => {
+  document.getElementById('saveBtn').addEventListener('click', async () => {
     /* Lee todos los valores del formulario */
     const name  = document.getElementById('prodName').value.trim();
     const desc  = document.getElementById('prodDesc').value.trim();
@@ -119,27 +125,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /* Busca el índice del producto en el array */
-    const allProducts = getProducts();
-    const idx = allProducts.findIndex(p => p.id === product.id);
-
-    if (idx !== -1) {
-      /* Actualiza solo los campos modificados, manteniendo el ID */
-      allProducts[idx] = {
-        ...allProducts[idx], /* Conserva todos los campos anteriores */
+    try {
+      await updateProduct(product.id, {
+        ...product,
         name,
         desc,
         category: cat,
-        stock:    parseInt(stock),
+        stock: parseInt(stock),
         buyPrice: parseFloat(buy) || 0,
-        price:    parseFloat(sell),
-        img:      imgData, /* Imagen nueva o la misma si no cambió */
-      };
-      saveProducts(allProducts); /* Persiste los cambios en localStorage */
-    }
+        price: parseFloat(sell),
+        img: imgData,
+      });
 
-    /* Notifica y redirige al dashboard */
-    showToast('Producto actualizado correctamente ✓');
-    setTimeout(() => window.location.href = '2_dashboard.html', 1200);
+      /* Notifica y redirige al dashboard */
+      showToast('Producto actualizado correctamente ✓');
+      setTimeout(() => window.location.href = '2_dashboard.html', 1200);
+    } catch (error) {
+      alert('No fue posible actualizar el producto en el backend.');
+    }
   });
 
 });

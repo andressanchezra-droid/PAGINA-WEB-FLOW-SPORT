@@ -58,9 +58,139 @@ function showToast(msg, duration = 2800) {
 
 
 /* ----------------------------------------------------------------
-   DATOS — Productos del inventario guardados en localStorage
-   Si no hay datos guardados, usa los productos por defecto
+   API — Cliente compartido para el backend en localhost:8080
    ---------------------------------------------------------------- */
+const API_BASE_URL = 'http://localhost:8080/api';
+const PRODUCT_CACHE_KEY = 'sf_products_cache';
+const USER_CACHE_KEY = 'sf_users_cache';
+
+function normalizeProduct(product) {
+  if (!product) return null;
+
+  const rawId = product.id ?? product._id ?? product.codigo ?? '';
+  const id = rawId === '' || rawId === null || rawId === undefined ? '' : String(rawId);
+
+  return {
+    id,
+    name: product.name ?? product.nombre ?? '',
+    category: product.category ?? product.categoria ?? '',
+    stock: Number(product.stock ?? 0),
+    price: Number(product.price ?? product.precio ?? 0),
+    buyPrice: Number(product.buyPrice ?? product.precioCompra ?? 0),
+    img: product.img ?? product.imagen ?? '',
+    desc: product.desc ?? product.descripcion ?? '',
+  };
+}
+
+function readCachedProducts() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(PRODUCT_CACHE_KEY) || '[]');
+    return Array.isArray(saved) ? saved.map(normalizeProduct).filter(Boolean) : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeCachedProducts(products) {
+  localStorage.setItem(PRODUCT_CACHE_KEY, JSON.stringify(products.map(normalizeProduct).filter(Boolean)));
+}
+
+function fallbackProducts() {
+  return DEFAULT_PRODUCTS.map((product, index) => normalizeProduct({
+    ...product,
+    id: product.id || String(index + 1),
+    nombre: product.name,
+    categoria: product.category,
+    precio: product.price,
+  }));
+}
+
+function productToApiPayload(product) {
+  return {
+    nombre: product.name ?? product.nombre ?? '',
+    precio: Number(product.price ?? product.precio ?? 0),
+    stock: Number(product.stock ?? 0),
+    categoria: product.category ?? product.categoria ?? '',
+    desc: product.desc ?? product.descripcion ?? '',
+    buyPrice: Number(product.buyPrice ?? product.precioCompra ?? 0),
+    img: product.img ?? product.imagen ?? '',
+  };
+}
+
+function normalizeUser(user) {
+  if (!user) return null;
+
+  const rawId = user.id ?? user._id ?? user.codigo ?? '';
+  const id = rawId === '' || rawId === null || rawId === undefined ? '' : String(rawId);
+
+  return {
+    id,
+    nombre: user.nombre ?? user.name ?? '',
+    correo: user.correo ?? user.email ?? '',
+    edad: Number(user.edad ?? 0),
+    rol: user.rol ?? user.role ?? 'user',
+    estado: Boolean(user.estado ?? user.status ?? false),
+  };
+}
+
+function readCachedUsers() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(USER_CACHE_KEY) || '[]');
+    return Array.isArray(saved) ? saved.map(normalizeUser).filter(Boolean) : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeCachedUsers(users) {
+  localStorage.setItem(USER_CACHE_KEY, JSON.stringify(users.map(normalizeUser).filter(Boolean)));
+}
+
+function userToApiPayload(user) {
+  const payload = {
+    nombre: user.nombre ?? user.name ?? '',
+    correo: user.correo ?? user.email ?? '',
+    edad: Number(user.edad ?? 0),
+    rol: user.rol ?? user.role ?? 'user',
+    estado: Boolean(user.estado ?? user.status ?? false),
+  };
+
+  const password = user.contraseña ?? user.password ?? '';
+  if (password) {
+    payload.contraseña = password;
+  }
+
+  return payload;
+}
+
+async function apiRequest(path, options = {}) {
+  const response = await fetch(API_BASE_URL + path, {
+    ...options,
+    headers: {
+      ...(options.headers || {}),
+    },
+  });
+
+  const text = await response.text();
+  let data = null;
+
+  if (text) {
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = text;
+    }
+  }
+
+  if (!response.ok) {
+    const message = data && typeof data === 'object' && data.message
+      ? data.message
+      : `Error ${response.status} al consultar ${path}`;
+    throw new Error(message);
+  }
+
+  return data;
+}
 
 /* Lista de productos iniciales del sistema */
 const DEFAULT_PRODUCTS = [
@@ -126,14 +256,151 @@ const DEFAULT_PRODUCTS = [
   },
 ];
 
-// La dirección de tu servidor Java
-const API_URL = 'http://localhost:8080/productos';
-
-// Pide los productos AL SERVIDOR (ya no al navegador)
 async function getProducts() {
-  const saved = localStorage.getItem('sf_products');
-  if (!saved) {
-    saveProducts(DEFAULT_PRODUCTS); // <-- agrega esta línea
+  try {
+    const data = await apiRequest('/productos');
+    if (Array.isArray(data)) {
+      const normalized = data.map(normalizeProduct).filter(Boolean);
+      writeCachedProducts(normalized);
+      return normalized;
+    }
+  } catch (error) {
+    const cached = readCachedProducts();
+    if (cached.length) return cached;
+    return fallbackProducts();
   }
-  return saved ? JSON.parse(saved) : DEFAULT_PRODUCTS;
+
+  return [];
+}
+
+function saveProducts(arr) {
+  const normalized = Array.isArray(arr) ? arr.map(normalizeProduct).filter(Boolean) : [];
+  writeCachedProducts(normalized);
+  return normalized;
+}
+
+async function createProduct(product) {
+  const data = await apiRequest('/productos', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(productToApiPayload(product)),
+  });
+
+  const created = normalizeProduct(data || product);
+  const cached = readCachedProducts();
+  const index = cached.findIndex(item => String(item.id) === String(created.id));
+
+  if (index >= 0) {
+    cached[index] = created;
+  } else {
+    cached.push(created);
+  }
+
+  writeCachedProducts(cached);
+  return created;
+}
+
+async function updateProduct(id, product) {
+  const data = await apiRequest('/productos/' + encodeURIComponent(id), {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(productToApiPayload({ ...product, id })),
+  });
+
+  const updated = normalizeProduct(data || { ...product, id });
+  const cached = readCachedProducts();
+  const index = cached.findIndex(item => String(item.id) === String(id));
+
+  if (index >= 0) {
+    cached[index] = updated;
+  } else {
+    cached.push(updated);
+  }
+
+  writeCachedProducts(cached);
+  return updated;
+}
+
+async function deleteProduct(id) {
+  await apiRequest('/productos/' + encodeURIComponent(id), {
+    method: 'DELETE',
+  });
+
+  const cached = readCachedProducts().filter(item => String(item.id) !== String(id));
+  writeCachedProducts(cached);
+  return true;
+}
+
+async function getUsers() {
+  try {
+    const data = await apiRequest('/usuarios');
+    if (Array.isArray(data)) {
+      const normalized = data.map(normalizeUser).filter(Boolean);
+      writeCachedUsers(normalized);
+      return normalized;
+    }
+  } catch (error) {
+    const cached = readCachedUsers();
+    if (cached.length) return cached;
+    throw error;
+  }
+
+  return [];
+}
+
+async function getUserById(id) {
+  const data = await apiRequest('/usuarios/' + encodeURIComponent(id));
+  return normalizeUser(data);
+}
+
+async function createUser(user) {
+  const data = await apiRequest('/usuarios', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(userToApiPayload(user)),
+  });
+
+  const created = normalizeUser(data || user);
+  const cached = readCachedUsers();
+  const index = cached.findIndex(item => String(item.id) === String(created.id));
+
+  if (index >= 0) {
+    cached[index] = created;
+  } else {
+    cached.push(created);
+  }
+
+  writeCachedUsers(cached);
+  return created;
+}
+
+async function updateUser(id, user) {
+  const data = await apiRequest('/usuarios/' + encodeURIComponent(id), {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(userToApiPayload({ ...user, id })),
+  });
+
+  const updated = normalizeUser(data || { ...user, id });
+  const cached = readCachedUsers();
+  const index = cached.findIndex(item => String(item.id) === String(id));
+
+  if (index >= 0) {
+    cached[index] = updated;
+  } else {
+    cached.push(updated);
+  }
+
+  writeCachedUsers(cached);
+  return updated;
+}
+
+async function deleteUser(id) {
+  await apiRequest('/usuarios/' + encodeURIComponent(id), {
+    method: 'DELETE',
+  });
+
+  const cached = readCachedUsers().filter(item => String(item.id) !== String(id));
+  writeCachedUsers(cached);
+  return true;
 }

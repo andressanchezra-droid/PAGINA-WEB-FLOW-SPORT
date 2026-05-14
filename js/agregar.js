@@ -115,42 +115,26 @@ document.addEventListener('DOMContentLoaded', () => {
      GUARDAR PRODUCTO
      Valida, crea el objeto y lo añade al array en localStorage
      ---------------------------------------------------------------- */
-  document.getElementById('saveBtn').addEventListener('click', () => {
-    /* Si algún campo es inválido, detiene el guardado */
-    if (!validate()) return;
+document.getElementById('saveBtn').addEventListener('click', async () => {
+  if (!validate()) return;
 
-    /* Lee los productos actuales */
-    const products = getProducts();
+  const newProduct = {
+    name:     document.getElementById('prodName').value.trim(),
+    desc:     document.getElementById('prodDesc').value.trim(),
+    category: document.getElementById('prodCat').value,
+    stock:    parseInt(document.getElementById('prodStock').value),
+    buyPrice: parseFloat(document.getElementById('prodBuy').value),
+    price:    parseFloat(document.getElementById('prodSell').value),
+    img:      imgData,
+  };
 
-    /* Genera el próximo ID correlativo (PRD-007, PRD-008, etc.) */
-    const nums    = products.map(p => parseInt(p.id.replace('PRD-', '')));
-    const nextNum = (Math.max(0, ...nums) + 1).toString().padStart(3, '0');
-
-    /* Crea el objeto del nuevo producto */
-    const newProduct = {
-      id:       'PRD-' + nextNum,
-      name:     document.getElementById('prodName').value.trim(),
-      desc:     document.getElementById('prodDesc').value.trim(),
-      category: document.getElementById('prodCat').value,
-      stock:    parseInt(document.getElementById('prodStock').value),
-      buyPrice: parseFloat(document.getElementById('prodBuy').value),
-      price:    parseFloat(document.getElementById('prodSell').value),
-      img:      imgData, /* La imagen en base64 (o vacío si no subió) */
-    };
-
-// En vez de guardar en el navegador, le manda el producto al servidor
-await fetch('http://localhost:8080/productos', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    nombre: newProduct.name,
-    precio: newProduct.price
-  })
-});
-
-    /* Notifica y redirige al dashboard */
+  try {
+    await createProduct(newProduct);
     showToast('Producto guardado correctamente ✓');
     setTimeout(() => window.location.href = '2_dashboard.html', 1200);
-  });
+  } catch (e) {
+    alert('No fue posible guardar el producto en el backend.');
+  }
+});
 
 });

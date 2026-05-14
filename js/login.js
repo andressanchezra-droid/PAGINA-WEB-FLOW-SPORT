@@ -6,16 +6,40 @@
    ================================================================ */
 
 
-/* ----------------------------------------------------------------
-   USUARIOS VÁLIDOS DEL SISTEMA
-   Aquí se definen los 3 usuarios con su correo, contraseña y nombre.
-   En un sistema real esto estaría en un servidor, no aquí.
-   ---------------------------------------------------------------- */
-const USERS = [
-  { email: 'sanchezandresfelipe191@gmail.com',  password: 'Admin123!',  name: 'Admin'  },
-  { email: 'carlos@sportflow.com', password: 'Carlos456!', name: 'Carlos' },
-  { email: 'maria@sportflow.com',  password: 'Maria789!',  name: 'María'  },
-];
+const API_BASE_URL = 'http://localhost:8080/api';
+
+async function apiRequest(path, options = {}) {
+  const response = await fetch(API_BASE_URL + path, {
+    ...options,
+    headers: {
+      ...(options.headers || {}),
+    },
+  });
+
+  const text = await response.text();
+  let data = null;
+
+  if (text) {
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = text;
+    }
+  }
+
+  if (!response.ok) {
+    const message = data && typeof data === 'object' && data.message
+      ? data.message
+      : `Error ${response.status}`;
+    throw new Error(message);
+  }
+
+  return data;
+}
+
+function getUserName(user) {
+  return user?.nombre || user?.name || user?.correo?.split('@')[0] || 'Admin';
+}
 
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -29,21 +53,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ----------------------------------------------------------------
      INICIAR SESIÓN
-     Verifica que el correo y contraseña coincidan con un usuario
+     Verifica credenciales contra el backend
      ---------------------------------------------------------------- */
-  function tryLogin() {
-    const email = emailInput.value.trim();
-    const pass  = passInput.value;
+  async function tryLogin() {
+    const correo = emailInput.value.trim();
+    const contraseña = passInput.value;
 
-    /* Busca el usuario que tenga ese correo Y esa contraseña */
-    const user = USERS.find(u => u.email === email && u.password === pass);
+    if (!correo || !contraseña) {
+      errorMsg.style.display = 'block';
+      passInput.focus();
+      return;
+    }
 
-    if (user) {
-      /* Usuario encontrado: guarda el nombre y redirige al dashboard */
-      localStorage.setItem('sf_user', user.name);
+    try {
+      const user = await apiRequest('/usuarios/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ correo, contraseña }),
+      });
+
+      localStorage.setItem('sf_user', getUserName(user));
       window.location.href = '2_dashboard.html';
-    } else {
-      /* Usuario no encontrado: muestra error y borra la contraseña */
+    } catch (error) {
       errorMsg.style.display = 'block';
       passInput.value = '';
       passInput.focus();
@@ -120,11 +151,10 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
 
-  /* ----------------------------------------------------------------
-     MODAL: REGISTRO DE NUEVO USUARIO
-     Permite crear una cuenta con nombre, correo y contraseña.
-     Los nuevos usuarios se guardan en localStorage.
-     ---------------------------------------------------------------- */
+    /* ----------------------------------------------------------------
+      MODAL: REGISTRO DE NUEVO USUARIO
+      Crea el usuario directamente en el backend.
+      ---------------------------------------------------------------- */
   const registerLink  = document.getElementById('registerLink');
   const registerModal = document.getElementById('registerModal');
   const cancelReg     = document.getElementById('cancelRegister');
@@ -161,7 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* Botón "Crear cuenta": valida y guarda el nuevo usuario */
-  submitReg.addEventListener('click', () => {
+  submitReg.addEventListener('click', async () => {
     const name  = regName.value.trim();
     const email = regEmail.value.trim();
     const pass  = regPass.value;
@@ -173,69 +203,27 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    /* Lee los usuarios existentes guardados (o empieza con la lista base) */
-    const savedUsers = JSON.parse(localStorage.getItem('sf_extra_users') || '[]');
+    try {
+      await apiRequest('/usuarios', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombre: name,
+          correo: email,
+          edad: 18,
+          rol: 'user',
+          estado: true,
+          contraseña: pass,
+        }),
+      });
 
-    /* Verifica que el correo no esté ya registrado */
-    const allEmails = [...USERS.map(u => u.email), ...savedUsers.map(u => u.email)];
-    if (allEmails.includes(email)) {
+      /* Cierra el modal y muestra un mensaje de éxito */
+      closeRegisterModal();
+      alert(`✅ Cuenta creada para ${name}. Ya puedes iniciar sesión.`);
+    } catch (error) {
       regError.style.display = 'block';
-      regError.textContent   = '⚠️ Ese correo ya está registrado.';
-      return;
+      regError.textContent   = '⚠️ No fue posible crear la cuenta en el backend.';
     }
-
-    /* Guarda el nuevo usuario en localStorage */
-    savedUsers.push({ email, password: pass, name });
-    localStorage.setItem('sf_extra_users', JSON.stringify(savedUsers));
-
-    /* Cierra el modal y muestra un mensaje de éxito */
-    closeRegisterModal();
-    alert(`✅ Cuenta creada para ${name}. Ya puedes iniciar sesión.`);
-  });
-
-});
-
-
-/* ----------------------------------------------------------------
-   INICIAR SESIÓN CON USUARIOS REGISTRADOS DINÁMICAMENTE
-   Sobreescribe la función tryLogin para incluir usuarios de localStorage
-   ---------------------------------------------------------------- */
-document.addEventListener('DOMContentLoaded', () => {
-
-  /* Al intentar login, también revisa los usuarios registrados dinámicamente */
-  const loginBtn   = document.getElementById('loginBtn');
-  const emailInput = document.getElementById('emailInput');
-  const passInput  = document.getElementById('passInput');
-  const errorMsg   = document.getElementById('errorMsg');
-
-  /* Reemplaza el listener anterior con uno que incluya usuarios extra */
-  loginBtn.replaceWith(loginBtn.cloneNode(true)); /* Limpia listeners previos */
-  const newLoginBtn = document.getElementById('loginBtn');
-
-  function tryLoginFull() {
-    const email = emailInput.value.trim();
-    const pass  = passInput.value;
-
-    /* Combina usuarios fijos con los registrados dinámicamente */
-    const extraUsers = JSON.parse(localStorage.getItem('sf_extra_users') || '[]');
-    const allUsers   = [...USERS, ...extraUsers];
-
-    const user = allUsers.find(u => u.email === email && u.password === pass);
-
-    if (user) {
-      localStorage.setItem('sf_user', user.name);
-      window.location.href = '2_dashboard.html';
-    } else {
-      errorMsg.style.display = 'block';
-      passInput.value = '';
-      passInput.focus();
-    }
-  }
-
-  newLoginBtn.addEventListener('click', tryLoginFull);
-  passInput.addEventListener('keydown', e => { if (e.key === 'Enter') tryLoginFull(); });
-  [emailInput, passInput].forEach(el => {
-    el.addEventListener('input', () => errorMsg.style.display = 'none');
   });
 
 });
