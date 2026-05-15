@@ -1,4 +1,14 @@
 /* ================================================================
+   ARCHIVO: js/editar-usuario.js
+   ¿QUÉ HACE? Formulario para EDITAR un usuario existente.
+   - Lee el ID guardado en localStorage (puesto por usuarios.js)
+   - Carga los datos actuales del usuario desde la API (GET /usuarios/{id})
+   - Rellena el formulario con esos datos
+   - Al guardar, hace PUT a /api/usuarios/{id}
+   - El cambio queda en data/usuarios.json
+   ================================================================ */
+
+/* ================================================================
    SPORTFLOW ADMIN — EDITAR USUARIO
    Archivo: js/editar-usuario.js
    Descripción: Carga un usuario, permite modificarlo y guardar.

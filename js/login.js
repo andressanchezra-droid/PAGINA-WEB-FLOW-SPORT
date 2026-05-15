@@ -1,11 +1,21 @@
+
 /* ================================================================
+   ARCHIVO: js/login.js
+   ¿QUÉ HACE? Maneja el inicio de sesión.
+   - Recoge correo y contraseña del formulario
+   - Envía POST a /api/usuarios/login
+   - Solo deja entrar a usuarios con rol "admin"
+   - También maneja el modal de "olvidé contraseña"
+   - Y el modal de registro de nuevo usuario
+   ================================================================ */
+
+   /* ================================================================
    SPORTFLOW ADMIN — LÓGICA DE LOGIN
    Archivo: js/login.js
    Descripción: Maneja el inicio de sesión, el modal de registro
    de nuevos usuarios y el modal de recuperación de contraseña.
    ================================================================ */
-
-
+   
 const API_BASE_URL = 'http://localhost:8080/api';
 
 async function apiRequest(path, options = {}) {
@@ -71,6 +81,21 @@ document.addEventListener('DOMContentLoaded', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ correo, contraseña }),
       });
+
+      // ── VERIFICACIÓN DE ROL ── 
+      // Solo los administradores pueden acceder al sistema
+    if (user.rol !== 'admin') {
+        errorMsg.textContent = 'Acceso denegado. Solo los administradores pueden ingresar.';
+        errorMsg.style.display = 'block';
+        passInput.value = '';
+        passInput.focus();
+        return; // Para aquí, no deja entrar
+      }
+      // ── FIN VERIFICACIÓN DE ROL ──
+
+      localStorage.setItem('sf_user', getUserName(user));
+      window.location.href = '2_dashboard.html';
+
 
       localStorage.setItem('sf_user', getUserName(user));
       window.location.href = '2_dashboard.html';

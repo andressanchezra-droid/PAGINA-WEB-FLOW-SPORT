@@ -165,11 +165,13 @@ function userToApiPayload(user) {
 
 async function apiRequest(path, options = {}) {
   const response = await fetch(API_BASE_URL + path, {
+      // "fetch" es como hacer una llamada telefónica al backend
     ...options,
     headers: {
       ...(options.headers || {}),
     },
   });
+  // ... procesa la respuesta
 
   const text = await response.text();
   let data = null;
@@ -283,8 +285,9 @@ async function createProduct(product) {
   const data = await apiRequest('/productos', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(productToApiPayload(product)),
+    body: JSON.stringify(productToApiPayload(product)), // Convierte a JSON
   });
+  // ...guarda también en caché local
 
   const created = normalizeProduct(data || product);
   const cached = readCachedProducts();
@@ -353,7 +356,15 @@ async function getUserById(id) {
   return normalizeUser(data);
 }
 
+
+// ── CREAR USUARIO ──
+// Esta función envía un POST al backend con los datos del nuevo usuario.
+// El backend los valida, genera un ID automático y los guarda en:
+//   → Memoria (Map<Long, Usuario>)
+//   → Archivo: data/usuarios.json en IntelliJ
+
 async function createUser(user) {
+    // Envía POST a http://localhost:8080/api/usuarios
   const data = await apiRequest('/usuarios', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -373,6 +384,11 @@ async function createUser(user) {
   writeCachedUsers(cached);
   return created;
 }
+
+// ── EDITAR USUARIO ──
+// Esta función envía un PUT al backend para actualizar un usuario.
+// PUT significa "reemplaza todo el objeto con estos nuevos datos".
+// La URL queda así: PUT http://localhost:8080/api/usuarios/3
 
 async function updateUser(id, user) {
   const data = await apiRequest('/usuarios/' + encodeURIComponent(id), {
@@ -395,6 +411,9 @@ async function updateUser(id, user) {
   return updated;
 }
 
+// ── ELIMINAR USUARIO ──
+// Envía DELETE al backend. Si el usuario existe, lo borra del Map
+// y reescribe el archivo data/usuarios.json sin ese usuario.
 async function deleteUser(id) {
   await apiRequest('/usuarios/' + encodeURIComponent(id), {
     method: 'DELETE',

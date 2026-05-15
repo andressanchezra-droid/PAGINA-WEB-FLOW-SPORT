@@ -1,4 +1,14 @@
 /* ================================================================
+   ARCHIVO: js/agregar.js
+   ¿QUÉ HACE? Formulario para CREAR un nuevo producto.
+   - Permite subir imagen (la convierte a base64)
+   - Valida que todos los campos obligatorios estén llenos
+   - Llama a createProduct() de utils.js
+   - createProduct() hace POST a http://localhost:8080/api/productos
+   - El producto queda guardado en data/productos.json
+   ================================================================ */
+
+/* ================================================================
    SPORTFLOW ADMIN — AGREGAR NUEVO PRODUCTO
    Archivo: js/agregar.js
    Descripción: Maneja el formulario de registro de un nuevo producto:

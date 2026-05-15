@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Editar Producto - SportFlow</title>
+  <title>Agregar Producto - SportFlow</title>
   <!-- Fuente principal -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <!-- Estilos globales: navbar, formularios, botones, toast -->
@@ -47,35 +47,37 @@
 <!-- ── CONTENIDO PRINCIPAL ── -->
 <main class="container">
 
-  <!-- Ruta de navegación -->
+  <!-- Ruta de navegación: Inventario > Agregar -->
   <div class="breadcrumb">
     <a href="2_dashboard.html">Inventario</a>
     <svg viewBox="0 0 24 24" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-    <span>Editar</span>
+    <span>Agregar</span>
   </div>
 
-  <!-- Título dinámico (JS lo actualiza con el nombre del producto) -->
-  <div class="page-title" id="pageTitle">Editar Producto</div>
+  <!-- Título de la página -->
+  <div class="page-title">Agregar Nuevo Producto</div>
 
-  <!-- Subtítulo con fecha de última actualización (JS la pone) -->
+  <!-- Subtítulo con la fecha actual -->
   <div class="page-sub">
     <svg viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
     <span id="pageDate"></span>
   </div>
 
-  <!-- Caja del formulario (los valores los llena editar.js) -->
+  <!-- Caja del formulario -->
   <div class="form-box">
 
     <!-- Nombre del producto -->
     <div class="field">
       <label>Nombre del Producto <span class="req">*</span></label>
-      <input type="text" id="prodName">
+      <input type="text" id="prodName" placeholder="Ej: Balón de Fútbol Nike">
+      <div class="error-field" id="errName">El nombre es obligatorio.</div>
     </div>
 
     <!-- Descripción -->
     <div class="field">
       <label>Descripción <span class="req">*</span></label>
-      <textarea id="prodDesc"></textarea>
+      <textarea id="prodDesc" placeholder="Describe brevemente el producto..."></textarea>
+      <div class="error-field" id="errDesc">La descripción es obligatoria.</div>
     </div>
 
     <!-- Fila: Categoría + Stock -->
@@ -91,10 +93,12 @@
           <option>Fitness</option>
           <option>Natación</option>
         </select>
+        <div class="error-field" id="errCat">Selecciona una categoría.</div>
       </div>
       <div class="field">
-        <label>Stock Actual <span class="req">*</span></label>
-        <input type="number" id="prodStock" min="0">
+        <label>Stock Inicial <span class="req">*</span></label>
+        <input type="number" id="prodStock" min="0" placeholder="0">
+        <div class="error-field" id="errStock">El stock debe ser mayor o igual a 0.</div>
       </div>
     </div>
 
@@ -104,47 +108,47 @@
         <label>Precio de Compra <span class="req">*</span></label>
         <div class="input-wrap">
           <span class="input-prefix">$</span>
-          <input type="number" id="prodBuy" class="price" min="0" step="0.01">
+          <input type="number" id="prodBuy" class="price" min="0" step="0.01" placeholder="0.00">
         </div>
+        <div class="error-field" id="errBuy">Ingresa un precio de compra válido.</div>
       </div>
       <div class="field">
         <label>Precio de Venta <span class="req">*</span></label>
         <div class="input-wrap">
           <span class="input-prefix">$</span>
-          <input type="number" id="prodSell" class="price" min="0" step="0.01">
+          <input type="number" id="prodSell" class="price" min="0" step="0.01" placeholder="0.00">
         </div>
+        <div class="error-field" id="errSell">Ingresa un precio de venta válido.</div>
       </div>
     </div>
 
-    <!-- Zona de imagen -->
+    <!-- Zona de carga de imagen -->
     <div class="field">
       <label>Imagen del Producto</label>
 
-      <!-- Imagen actual (JS la muestra si el producto ya tiene imagen) -->
-      <div class="img-current" id="imgCurrent">
-        <img id="currentImg" src="" alt="Imagen actual del producto">
-        <!-- Botón para eliminar la imagen actual -->
-        <button class="btn-del-img" id="delImgBtn">✕</button>
-      </div>
-
-      <!-- Enlace para cambiar la imagen (oculto hasta que haya imagen) -->
-      <button class="btn-change-img" id="changeImgBtn">Cambiar imagen</button>
-
-      <!-- Cuadro punteado para subir nueva imagen (oculto si ya hay imagen) -->
+      <!-- Cuadro punteado para subir imagen (visible por defecto) -->
       <div class="upload-area" id="uploadArea">
         <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         <p>Haz clic para subir una imagen</p>
         <small>PNG, JPG hasta 10MB</small>
       </div>
 
-      <!-- Input file oculto -->
-      <input type="file" id="fileInput" accept="image/*">
+      <!-- Input file oculto — se activa al hacer clic en el cuadro -->
+      <input type="file" id="fileInput" accept="image/*" style="display:none;">
+
+      <!-- Vista previa de la imagen (oculta hasta que se suba una) -->
+      <div class="img-preview" id="imgPreview">
+        <img id="previewImg" src="" alt="Vista previa de la imagen">
+        <!-- Botón rojo para eliminar la imagen seleccionada -->
+        <button class="btn-remove-img" id="removeImg">✕</button>
+      </div>
+
     </div>
 
-    <!-- Botones: Descartar y Actualizar -->
+    <!-- Botones al pie del formulario -->
     <div class="form-footer">
-      <a href="2_dashboard.html" class="btn-cancel">Descartar Cambios</a>
-      <button class="btn-save" id="saveBtn">Actualizar Cambios</button>
+      <a href="2_dashboard.html" class="btn-cancel">Cancelar</a>
+      <button class="btn-save" id="saveBtn">Guardar Producto</button>
     </div>
 
   </div>
@@ -153,10 +157,17 @@
 <!-- Notificación flotante de confirmación -->
 <div class="toast" id="toast"></div>
 
+<!-- Script para mostrar la fecha actual en el subtítulo -->
+<script>
+  const now = new Date();
+  document.getElementById('pageDate').textContent =
+    'Fecha: ' + now.toLocaleDateString('es-CO') + ' ' +
+    now.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+</script>
 
-<!-- ── SCRIPTS ── -->
-<script src="js/utils.js"></script>   <!-- Navbar, toast, getProducts, saveProducts -->
-<script src="js/editar.js"></script>  <!-- Carga datos, imagen, actualizar producto -->
+<!-- ── SCRIPTS (orden importante: utils primero, luego agregar) ── -->
+<script src="js/utils.js"></script>    <!-- Navbar, toast, createProduct -->
+<script src="js/agregar.js"></script>  <!-- Carga de imagen, validación y guardado -->
 
 </body>
 </html>

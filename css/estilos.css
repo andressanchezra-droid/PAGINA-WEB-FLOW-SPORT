@@ -30,7 +30,7 @@
   box-shadow: 0 1px 4px rgba(0,0,0,0.08);
   position: sticky; /* Se fija al hacer scroll */
   top: 0;
-  z-index: 50;      /* Por encima del contenido */
+  z-index: 50s;      /* Por encima del contenido */
 }
 
 /* Lado izquierdo: ícono azul + nombre del sistema */
