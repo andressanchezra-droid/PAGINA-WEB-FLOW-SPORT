@@ -361,7 +361,6 @@ async function getUserById(id) {
 // Esta función envía un POST al backend con los datos del nuevo usuario.
 // El backend los valida, genera un ID automático y los guarda en:
 //   → Memoria (Map<Long, Usuario>)
-//   → Archivo: data/usuarios.json en IntelliJ
 
 async function createUser(user) {
     // Envía POST a http://localhost:8080/api/usuarios

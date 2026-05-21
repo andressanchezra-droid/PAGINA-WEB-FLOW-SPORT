@@ -48,6 +48,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 // js/agregar-usuario.js
+//Busca el elemento con ID 'saveBtn', y cuando alguien haga 
+// clic en él, ejecuta lo siguiente.
   document.getElementById('saveBtn').addEventListener('click', async () => {
     if (!validate()) return;
   // Recoge lo que escribió el usuario

@@ -1,8 +1,8 @@
-/* ================================================================
+/* =============================<===================================
    ARCHIVO: js/editar-usuario.js
    ¿QUÉ HACE? Formulario para EDITAR un usuario existente.
    - Lee el ID guardado en localStorage (puesto por usuarios.js)
-   - Carga los datos actuales del usuario desde la API (GET /usuarios/{id})
+   - Carga los datos actuales d>el usuario desde la API (GET /usuarios/{id})
    - Rellena el formulario con esos datos
    - Al guardar, hace PUT a /api/usuarios/{id}
    - El cambio queda en data/usuarios.json
