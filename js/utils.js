@@ -147,51 +147,186 @@ function writeCachedUsers(users) {
 }
 
 function userToApiPayload(user) {
+  // ═════════════════════════════════════════════════════════════════
+  // TRANSFORMADOR DE VARIABLES PARA EL BACKEND
+  // ═════════════════════════════════════════════════════════════════
+  //
+  // ¿QUÉ HACE?
+  // Transforma un objeto usuario (JavaScript) a un objeto que entienda el backend
+  // 
+  // ¿POR QUÉ?
+  // A veces el JavaScript usa nombres diferentes a los que espera el backend
+  // Ej: JavaScript puede usar 'name', pero el backend espera 'nombre'
+  //
+  // EJEMPLO:
+  // ENTRADA (JavaScript):
+  // {
+  //   nombre: "Juan",
+  //   correo: "juan@example.com",
+  //   email: "no se usa",
+  //   name: "no se usa",
+  //   edad: 25,
+  //   rol: "admin",
+  //   estado: true,
+  //   contraseña: "123456"
+  // }
+  //
+  // SALIDA (JSON para el backend):
+  // {
+  //   "nombre": "Juan",
+  //   "correo": "juan@example.com",
+  //   "edad": 25,
+  //   "rol": "admin",
+  //   "estado": true,
+  //   "contraseña": "123456"
+  // }
+  // ═════════════════════════════════════════════════════════════════
+  
   const payload = {
+    // Usa el nombre si existe, si no, usa name, si no, usa vacío
     nombre: user.nombre ?? user.name ?? '',
+    // ↑ ?? (operador Nullish Coalescing) = "usa el primero que no sea null/undefined"
+    
     correo: user.correo ?? user.email ?? '',
+    // ↑ El JavaScript puede tener 'correo' O 'email'
+    // ↑ Aseguramos que el backend siempre recibe 'correo'
+    
     edad: Number(user.edad ?? 0),
+    // ↑ Convierte a número (si es string, lo convierte)
+    // ↑ Si no existe, usa 0 por defecto
+    
     rol: user.rol ?? user.role ?? 'user',
+    // ↑ Puede ser 'rol' O 'role'
+    // ↑ Si no existe, por defecto es 'user'
+    
     estado: Boolean(user.estado ?? user.status ?? false),
+    // ↑ Convierte a boolean (true/false)
+    // ↑ Puede ser 'estado' O 'status'
+    // ↑ Si no existe, por defecto es false (inactivo)
   };
 
+  // SOLO si existe contraseña, la agrega al payload
+  // (Por seguridad, no queremos enviar contraseña vacía o undefined)
   const password = user.contraseña ?? user.password ?? '';
+  // ↑ Intenta: contraseña → password → vacío
+  
   if (password) {
+    // ↑ Si la contraseña NO está vacía
     payload.contraseña = password;
+    // ↑ La agrega al objeto que se enviará al backend
   }
 
   return payload;
+  // ↑ Devuelve el objeto transformado (listo para enviar al backend)
 }
 
 async function apiRequest(path, options = {}) {
+  // ═════════════════════════════════════════════════════════════════
+  // FUNCIÓN CENTRAL PARA COMUNICACIÓN CON EL BACKEND
+  // ═════════════════════════════════════════════════════════════════
+  //
+  // ¿QUÉ HACE?
+  // 1. Construye la URL completa (API_BASE_URL + path)
+  // 2. Envía una solicitud HTTP al backend (GET, POST, PUT, DELETE)
+  // 3. Recibe la respuesta del backend
+  // 4. Convierte la respuesta de texto a JSON
+  // 5. Si hay error, lanza una excepción
+  // 6. Si todo bien, devuelve los datos
+  //
+  // PARÁMETROS:
+  // ├─ path: string - Ruta del endpoint
+  // │  Ejemplos: '/usuarios', '/usuarios/login', '/usuarios/5'
+  // │
+  // └─ options: object - Configuración de la solicitud
+  //    ├─ method: 'POST', 'GET', 'PUT', 'DELETE'
+  //    ├─ headers: { 'Content-Type': 'application/json' }
+  //    └─ body: JSON con los datos a enviar (solo para POST/PUT)
+  //
+  // EJEMPLO DE LLAMADA:
+  // const user = await apiRequest('/usuarios/login', {
+  //   method: 'POST',
+  //   headers: { 'Content-Type': 'application/json' },
+  //   body: JSON.stringify({ correo: 'prof@...', contraseña: '...' })
+  // });
+  // ═════════════════════════════════════════════════════════════════
+  
   const response = await fetch(API_BASE_URL + path, {
-      // "fetch" es como hacer una llamada telefónica al backend
+    // ↑ fetch() es la función de JavaScript para hacer solicitudes HTTP
+    // ↑ API_BASE_URL = 'http://localhost:8080/api'
+    // ↑ Ejemplo: fetch('http://localhost:8080/api/usuarios/login', {...})
+    
     ...options,
+    // ↑ Expande las opciones (method, headers, body)
+    
     headers: {
       ...(options.headers || {}),
+      // ↑ Mantiene los headers que fueron pasados
     },
   });
-  // ... procesa la respuesta
+  // ↑ Aquí se envía la solicitud al servidor y esperamos respuesta
+  
+  // El servidor responde con:
+  // - status: 200 (OK), 201 (Created), 400 (Bad Request), 401 (Unauthorized), 500 (Error), etc.
+  // - body: Los datos (generalmente JSON)
 
+  /* ────────────────────────────────────────────────────────────
+     PASO 1: OBTENER LA RESPUESTA COMO TEXTO
+     ──────────────────────────────────────────────────────────── */
   const text = await response.text();
+  // ↑ Convierte la respuesta a texto (string)
+  // ↑ Ejemplo: '{"id":1,"nombre":"Juan"}'
+  
   let data = null;
+  // ↑ Variable para guardar los datos parseados
 
+  /* ────────────────────────────────────────────────────────────
+     PASO 2: CONVERTIR EL TEXTO A JSON
+     ──────────────────────────────────────────────────────────── */
   if (text) {
+    // ↑ Si la respuesta tiene contenido (no está vacía)
+    
     try {
       data = JSON.parse(text);
+      // ↑ Convierte el texto JSON a objeto JavaScript
+      // ↑ ANTES: '{"id":1,"nombre":"Juan"}'
+      // ↑ DESPUÉS: { id: 1, nombre: 'Juan' }
+      
     } catch {
+      // ↑ Si el texto NO es JSON válido (por ej, es HTML de error)
       data = text;
+      // ↑ Simplemente guarda el texto como está
     }
   }
 
+  /* ────────────────────────────────────────────────────────────
+     PASO 3: VERIFICAR SI HUBO ERROR
+     ──────────────────────────────────────────────────────────── */
   if (!response.ok) {
+    // ↑ response.ok es FALSE si el status no es 2xx (200-299)
+    // ↑ Es decir, si hay cualquier error (4xx, 5xx, etc)
+    
     const message = data && typeof data === 'object' && data.message
       ? data.message
       : `Error ${response.status} al consultar ${path}`;
+    // ↑ Intenta obtener el mensaje de error del backend
+    // ↑ Si no lo encuentra, crea un mensaje genérico
+    // ↑ Ejemplo: "Error 401 al consultar /usuarios/login"
+    
     throw new Error(message);
+    // ↑ LANZA una excepción (error) que será capturada en el try-catch del llamador
+    // ↑ Ejemplo de error:
+    //    "El correo o contraseña son incorrectos"
+    //    "El usuario ya existe"
+    //    "Error 500 al consultar /usuarios"
   }
 
+  /* ────────────────────────────────────────────────────────────
+     PASO 4: TODO BIEN - DEVOLVER LOS DATOS
+     ──────────────────────────────────────────────────────────── */
   return data;
+  // ↑ Si response.ok es TRUE, devuelve los datos
+  // ↑ Pueden ser NULL (si la respuesta estaba vacía)
+  // ↑ O un objeto JavaScript con los datos del backend
 }
 
 /* Lista de productos iniciales del sistema */
@@ -358,30 +493,99 @@ async function getUserById(id) {
 
 
 // ── CREAR USUARIO ──
-// Esta función envía un POST al backend con los datos del nuevo usuario.
-// El backend los valida, genera un ID automático y los guarda en:
-//   → Memoria (Map<Long, Usuario>)
+// ═════════════════════════════════════════════════════════════════
+// FUNCIÓN PRINCIPAL PARA GUARDAR USUARIOS EN EL BACKEND
+// ═════════════════════════════════════════════════════════════════
+//
+// Esta función es LLAMADA desde agregar-usuario.js
+// Hace POST al backend con los datos del nuevo usuario
+//
+// FLUJO COMPLETO:
+// 1. JavaScript (agregar-usuario.js) recoge variables del formulario
+// 2. Llama a createUser() con esas variables
+// 3. createUser() transforma variables a formato API
+// 4. createUser() hace fetch() (HTTP POST) al backend
+// 5. Backend recibe el JSON y guarda el usuario
+// 6. Backend devuelve el usuario guardado (con ID generado)
+// 7. createUser() recibe la respuesta
+// 8. createUser() guarda en caché (localStorage)
+// 9. createUser() devuelve el usuario al llamador
+//
+// PARÁMETRO:
+// ├─ user: object con propiedades:
+// │  ├─ nombre: string
+// │  ├─ correo: string
+// │  ├─ edad: number
+// │  ├─ rol: string ("admin", "user", "profesor", etc)
+// │  ├─ estado: boolean
+// │  └─ contraseña: string
+//
+// RETORNA:
+// └─ object: El usuario creado (con ID generado por backend)
+// ═════════════════════════════════════════════════════════════════
 
 async function createUser(user) {
-    // Envía POST a http://localhost:8080/api/usuarios
+  // ↑ Esta función RECIBE un objeto 'user' con los datos
+  // ↑ Ejemplo:
+  // {
+  //   nombre: "Juan Perez",
+  //   correo: "juan@example.com",
+  //   edad: 25,
+  //   rol: "admin",
+  //   estado: true,
+  //   contraseña: "123456"
+  // }
+  
+  // PASO 1: Transforma el objeto user a formato API (en utils.js línea 149-164)
+  // Esto asegura que las variables tengan los nombres correctos que espera el backend
+  
+  // PASO 2: Hace HTTP POST al backend
   const data = await apiRequest('/usuarios', {
+    // ↑ URL: http://localhost:8080/api/usuarios
+    // ↑ MÉTODO: POST (crear nuevo)
+    
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(userToApiPayload(user)),
+    // ↑ Convierte el objeto user a JSON y lo envía en el body
+    // ↑ El backend recibe este JSON
   });
 
+  // PASO 3: Recibe la respuesta del backend y la normaliza
   const created = normalizeUser(data || user);
+  // ↑ El backend devuelve algo como:
+  // {
+  //   "id": 5,
+  //   "nombre": "Juan Perez",
+  //   "correo": "juan@example.com",
+  //   "edad": 25,
+  //   "rol": "admin",
+  //   "estado": true
+  // }
+  // ↑ normalizeUser() asegura que tenga el formato correcto
+  
+  // PASO 4: Actualiza el caché local (localStorage)
   const cached = readCachedUsers();
+  // ↑ Obtiene los usuarios guardados en localStorage
+  
   const index = cached.findIndex(item => String(item.id) === String(created.id));
+  // ↑ Busca si este usuario ya está en caché (por el ID)
 
   if (index >= 0) {
+    // ↑ Si ya existe en caché, lo actualiza
     cached[index] = created;
   } else {
+    // ↑ Si no existe, lo agrega al final del array
     cached.push(created);
   }
 
   writeCachedUsers(cached);
+  // ↑ Guarda los usuarios actualizados en localStorage
+  // ↑ Propósito: No perder datos si se cierra el navegador
+
   return created;
+  // ↑ Devuelve el usuario creado
+  // ↑ El llamador (agregar-usuario.js) puede usarlo si quiere
 }
 
 // ── EDITAR USUARIO ──
